@@ -1,25 +1,20 @@
 ## Reactive Point
 
-
+See examples in `src/examples` folder.
 
 ### Initial setup
 
 ```bash
 # Clone the repo
-git clone https://github.com/caesarsol/es6-boilerplate
-cd es6-boilerplate
+git clone https://github.com/caesarsol/reactive-point
+cd reactive-point
 
 # Install dependencies
 npm install
 
 # To use global command `gulp`
 npm install -g gulp
-```
 
-### Running in the browser
-Runs an initial build, listens on your files changes, rebuilds them when necessary
-and automagically reloads the browser!
-
-```bash
+# Listens on your files changes and rebuilds them when necessary
 gulp watch
 ```
