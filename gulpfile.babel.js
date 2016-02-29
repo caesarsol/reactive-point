@@ -1,9 +1,9 @@
 import gulp from 'gulp'
 import browserify from 'browserify'
-import watchify from 'watchify'
 import babelify from 'babelify'
 import rimraf from 'rimraf'
 import source from 'vinyl-source-stream'
+import glob from 'glob'
 import sass from 'gulp-sass'
 import browserSyncModule from 'browser-sync'
 import autoprefixer from 'gulp-autoprefixer'
@@ -14,16 +14,10 @@ let browserSync = browserSyncModule.create()
 const config = {
   inFiles: {
     html: 'src/examples/*.html',
-    js:   [
-      'src/examples/scarlett.js',
-      'src/examples/bb8.js',
-    ],
+    js:   'src/examples/*.js',
     css:  'src/examples/*.{sass,scss,css}',
   },
   outDir: 'build/',
-  outFiles: {
-    js:   'app.js',
-  },
 }
 
 gutil.log('Starting!')
@@ -36,19 +30,8 @@ function logError(err) {
   // gutil.log(err)
 }
 
-function getBundler(filename) {
-    let conf = {
-      entries: config.inFiles.js,
-      paths: ['./node_modules', './src'],
-      debug: true,
-    }
-    Object.assign(conf, watchify.args)
-
-    return watchify(browserify(conf)).transform(babelify)
-}
-
-gulp.task('clean', function (cb) {
-  return rimraf(config.outDir, cb)
+gulp.task('clean', function (done) {
+  rimraf(config.outDir, done)
 })
 
 gulp.task('server', function () {
@@ -58,12 +41,23 @@ gulp.task('server', function () {
   })
 })
 
-gulp.task('js', function () {
-  return getBundler().bundle()
-    .on('error', logError)
-    .pipe(source(config.outFiles.js))
-    .pipe(gulp.dest(config.outDir))
-    .pipe(browserSync.stream())
+gulp.task('js', function (done) {
+  let browserify_opts = {
+    paths: ['./node_modules', './src'],
+    debug: true,
+  }
+
+  glob(config.inFiles.js, (err, files) => {
+    if (err) throw err
+    files.forEach(filename => {
+      browserify(filename, browserify_opts).transform(babelify).bundle()
+        .on('error', logError)
+        .pipe(source(filename.replace('src/examples/', '')))
+        .pipe(gulp.dest(config.outDir))
+        .pipe(browserSync.stream())
+    })
+    done(null)
+  })
 })
 
 gulp.task('sass', function () {
@@ -82,7 +76,7 @@ gulp.task('html', function () {
 
 gulp.task('watch', ['clean', 'server', 'js', 'sass', 'html'], function () {
   // FIXME: initial build is done two times
-  getBundler().on('update', () => gulp.start('js'))
+  gulp.watch(config.inFiles.js, ['js'])
   gulp.watch(config.inFiles.css, ['sass'])
   gulp.watch(config.inFiles.html, ['html'])
 })
