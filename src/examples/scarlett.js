@@ -52,6 +52,7 @@ $(window).load(() => {
 
   position.addWatcher((pt) => {
     $image.translate(pt.x, pt.y)
+    // Crazy simple to add new transformations:
     // $image.rotate((pt.x / 500 * 90) + 180, {center: imageCenter})
   })
 
