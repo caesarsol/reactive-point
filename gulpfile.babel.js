@@ -1,7 +1,7 @@
 import gulp from 'gulp'
 import browserify from 'browserify'
 import babelify from 'babelify'
-import rimraf from 'rimraf'
+import del from 'del'
 import source from 'vinyl-source-stream'
 import glob from 'glob'
 import sass from 'gulp-sass'
@@ -30,8 +30,8 @@ function logError(err) {
   // gutil.log(err)
 }
 
-gulp.task('clean', function (done) {
-  rimraf(config.outDir, done)
+gulp.task('clean', function () {
+  return del(config.outDir)
 })
 
 gulp.task('server', function () {
