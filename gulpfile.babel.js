@@ -30,17 +30,6 @@ function logError(err) {
   // gutil.log(err)
 }
 
-gulp.task('clean', function () {
-  return del(config.outDir)
-})
-
-gulp.task('server', function () {
-  return browserSync.init({
-    server: {baseDir: config.outDir},
-    ui: false,
-  })
-})
-
 gulp.task('js', function (done) {
   let browserify_opts = {
     paths: ['./node_modules', './src'],
@@ -74,11 +63,25 @@ gulp.task('html', function () {
     .pipe(browserSync.stream())
 })
 
-gulp.task('watch', ['clean', 'server', 'js', 'sass', 'html'], function () {
-  // FIXME: initial build is done two times
-  gulp.watch(config.inFiles.js, ['js'])
+gulp.task('build', ['js', 'sass', 'html'])
+
+gulp.task('rebuild', function () {
+  return del(config.outDir)
+    .then(() => console.log('Deleted build/'))
+    .then(() => gulp.start('build'))
+})
+
+gulp.task('server', function () {
+  return browserSync.init({
+    server: {baseDir: config.outDir},
+    ui: false,
+  })
+})
+
+gulp.task('watch', ['rebuild'], function () {
+  gulp.watch('src/**/*.js', ['js'])
   gulp.watch(config.inFiles.css, ['sass'])
   gulp.watch(config.inFiles.html, ['html'])
 })
 
-gulp.task('default', ['watch'])
+gulp.task('default', ['watch', 'server'])
