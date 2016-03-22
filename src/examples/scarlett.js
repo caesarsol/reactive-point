@@ -19,14 +19,17 @@ $(window).load(() => {
     y: $image.height(),
   }
 
-  let depth = new ReactivePoint().setWith((c, cn) =>
-        boxDim[cn] / (boxDim[cn] - imageDim[cn])
-  )
+  // Depth is intended as a multiplier,
+  // built so that the image always covers the box.
+  let depth = {
+    x: imageDim.x - boxDim.x,
+    y: imageDim.y - boxDim.y,
+  }
 
   let boxCenter = new ReactivePoint(boxDim.x / 2, boxDim.y / 2)
   let imageCenter = new ReactivePoint(imageDim.x / 2, imageDim.y / 2)
 
-  let position = new ReactivePoint()
+  let imagePos = new ReactivePoint()
   let desiredFocus = new ReactivePoint()
   let currentFocus = new ReactivePoint()
   let mouse = new ReactivePoint()
@@ -44,16 +47,19 @@ $(window).load(() => {
 
   currentFocus.followAnimating(desiredFocus, {dampening: 0.05, maxVelocity: 30, maxAcceleration: 5})
 
-  position.addUpdater((position) => {
-    currentFocus.addWatcher((currentFocus) => {
-      position.setWith((c, cn) => currentFocus[cn] / depth[cn])
-    })
-  })
+  imagePos.follow(currentFocus, (pt) =>
+    pt
+    .subtracted(boxCenter) // relativized
+    .divided(boxDim)       // normalized
+    .multiplied(depth)
+    .added(boxCenter)      // de-relativized
+  )
 
-  position.addWatcher((pt) => {
-    $image.translate(pt.x, pt.y)
+  imagePos.addWatcher((pt) => {
+    let pos = pt.subtracted(imageCenter)
+    $image.translate(pos.x, pos.y)
     // Crazy simple to add new transformations:
-    // $image.rotate((pt.x / 500 * 90) + 180, {center: imageCenter})
+    // $image.rotate((pt.x / 500 * 90), {center: imageCenter})
   })
 
   currentFocus.setOn(boxCenter)
@@ -62,5 +68,5 @@ $(window).load(() => {
   new ReactivePointLogger(boxCenter, 'boxCenter', {color: 'green'}).mount($box)
   new ReactivePointLogger(desiredFocus, 'desiredFocus', {color: 'blue'}).mount($box)
   new ReactivePointLogger(currentFocus, 'currentFocus', {color: 'red'}).mount($box)
-  new ReactivePointLogger(position, 'position', {color: 'yellow', centerOn: imageCenter}).mount($box)
+  new ReactivePointLogger(imagePos, 'imagePos', {color: 'yellow'}).mount($box)
 })
