@@ -109,8 +109,16 @@ export class ReactivePoint {
     return this
   }
 
-  multiply(scalar) {
-    this.setWith(c => c * scalar)
+  multiply(otherPoint) {
+    if (!otherPoint.x || !otherPoint.y) {
+      otherPoint = {x: otherPoint, y: otherPoint}
+    }
+    this.setWith((c, cn) => c * otherPoint[cn])
+    return this
+  }
+
+  divide(otherPoint) {
+    this.setWith((c, cn) => c / otherPoint[cn])
     return this
   }
 
@@ -139,8 +147,12 @@ export class ReactivePoint {
     return this.duplicated().subtract(otherPoint)
   }
 
-  multiplied(scalar) {
-    return this.duplicated().multiply(scalar)
+  multiplied(otherPoint) {
+    return this.duplicated().multiply(otherPoint)
+  }
+
+  divided(otherPoint) {
+    return this.duplicated().divide(otherPoint)
   }
 
   normalized() {
