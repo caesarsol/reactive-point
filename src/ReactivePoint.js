@@ -56,9 +56,9 @@ export class ReactivePoint {
     return this
   }
 
-  follow(otherPoint) {
+  follow(otherPoint, transform = (pt) => pt) {
     otherPoint.addWatcher(() => {
-      this.setOn(otherPoint)
+      this.setOn(transform(otherPoint))
     })
     return this
   }
