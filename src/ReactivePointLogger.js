@@ -66,12 +66,21 @@ export class ReactivePointLogger {
   mount(dom_element) {
     this.$marker.appendTo(dom_element)
 
-    $('<div>', {className: 'point-logger', css: {color: '#ccc'}}).append([
+    let $pointLoggerContainer = $('.point-logger-container')
+    if (!$pointLoggerContainer.length) {
+      $pointLoggerContainer = $('<div>', {
+        class: 'point-logger-container',
+        css: {position: 'fixed', right: 0, top: 0},
+      })
+      $pointLoggerContainer.appendTo(dom_element)
+    }
+
+    $('<div>', {class: 'point-logger', css: {color: '#ccc'}}).append([
       this.$label,
       this.$coordinateLoggerX,
       this.$coordinateLoggerY,
       this.$coordinateLoggerM,
-    ]).appendTo(dom_element)
+    ]).appendTo($pointLoggerContainer)
 
     this.watch()
     this.log()
